@@ -2,6 +2,6 @@
 
   <xacro:include filename="$(find kendama_description)/urdf/kendama.xacro"/>
 
-  <xacro:kendama parent="base_link"/>
+  <xacro:kendama parent="tool0"/>
 
 </robot>
