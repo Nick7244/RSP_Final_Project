@@ -1,10 +1,10 @@
-<robot name="hc_sr04" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="kendama" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="kendama">
+  <xacro:macro name="kendama" params="parent">
 
     <link name="ken_link">
       <visual>
-	<origin xyz="0 0 0" rpy="0 0 0"/>
+	<origin xyz="0 0 0" rpy="1.5708 0 0"/>
 	<geometry>
 	  <mesh filename = "file::///$(find kendama_description)/meshes/ken.STL"
 		scale = "0.001 0.001 0.001"/>
