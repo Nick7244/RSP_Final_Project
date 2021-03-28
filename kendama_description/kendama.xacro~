@@ -1,0 +1,31 @@
+<robot name="hc_sr04" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="kendama">
+
+    <link name="ken_link">
+      <visual>
+	<origin xyz="0 0 0" rpy="0 0 0"/>
+	<geometry>
+	  <mesh filename = "file::///$(find kendama_description)/meshes/ken.stl"
+		scale = "0.001 0.001 0.001"/>
+	</geometry>
+	<material name = "wood">
+	  <color rgba="0.59 0.44 0.20 0.5"/>
+	</material>
+      </visual>
+      <collision>
+	<geometry>
+	  <mesh filename = "file::///$(find kendama_description)/meshes/ken_simple.stl"
+		scale = "0.001 0.001 0.001"/>
+	</geometry>
+      </collision>
+    </link>
+
+    <joint name="ken_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="ken_link"/>
+    </joint>
+    
+  </xacro:macro>
+
+</robot>
