@@ -6,7 +6,7 @@
       <visual>
 	<origin xyz="0 0 0" rpy="1.5708 0 0"/>
 	<geometry>
-	  <mesh filename = "file::///$(find kendama_description)/meshes/ken.STL"
+	  <mesh filename = "file::///$(find kendama_description)/meshes/visual/ken.STL"
 		scale = "0.001 0.001 0.001"/>
 	</geometry>
 	<material name = "wood">
@@ -15,7 +15,7 @@
       </visual>
       <collision>
 	<geometry>
-	  <mesh filename = "file::///$(find kendama_description)/meshes/ken_simple.STL"
+	  <mesh filename = "file::///$(find kendama_description)/meshes/collision/ken_simple.STL"
 		scale = "0.001 0.001 0.001"/>
 	</geometry>
       </collision>
