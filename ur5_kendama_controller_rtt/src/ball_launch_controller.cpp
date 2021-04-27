@@ -13,7 +13,8 @@
 ball_launch_controller::ball_launch_controller( const std::string& name ) 
     : TaskContext(name),
     port_msr_jnt_state("Measured joint state"),
-    controller_state(idle)
+    controller_state(idle),
+    launchCommanded(false)
 {
     std::cout << "ball_launch_controller::ball_launch_controller" << std::endl;
 
@@ -49,7 +50,7 @@ ball_launch_controller::ball_launch_controller( const std::string& name )
     addOperation("SetJointPos", &ball_launch_controller::setJointPos, this, RTT::OwnThread);
     addOperation("ZeroPose", &ball_launch_controller::commandZeroPose, this, RTT::OwnThread);
     addOperation("TPose", &ball_launch_controller::commandTPose, this, RTT::OwnThread);
-    addOperation("LaunchBall", &ball_launch_controller::launchBall, this, RTT::OwnThread);
+    addOperation("LaunchBall", &ball_launch_controller::launchBallFirstSegment, this, RTT::OwnThread);
 }
 
 
@@ -95,31 +96,6 @@ bool ball_launch_controller::startHook()
 
 void ball_launch_controller::updateHook() 
 {
-    /*switch(controller_state)
-    {
-        case idle :
-            
-            std::cout << "Idle" << std::endl;
-            break;
-
-        case launch :
-            
-            std::cout << "Launching" << std::endl;
-            break;
-
-        case follow :
-            
-            std::cout << "Following" << std::endl;
-            
-            break;
-
-        case craddle :
-            
-            std::cout << "Craddling" << std::endl;
-            break;
-    }*/
-
-
     // compute an iteration of the trajectory
     int result = rml->RMLPosition(*ip, op, flags);
 
@@ -138,6 +114,34 @@ void ball_launch_controller::updateHook()
     }
 
     port_msr_jnt_state.write(js);
+
+    // If we have a commanded launch of the ball
+    if( launchCommanded )
+    {
+        // Wait to achieve mid-waypoint
+        KDL::JntArray q_cur = getJointPos();
+        KDL::JntArray diff(6);
+        KDL::Subtract(q_cur, q_mid_desired, diff);
+
+        float sum_of_squares = diff.data[0]*diff.data[0] + diff.data[1]*diff.data[1] + 
+                    diff.data[2]*diff.data[2] + diff.data[3]*diff.data[3] + 
+                    diff.data[4]*diff.data[4] + diff.data[5]*diff.data[5];
+
+        float norm_diff = pow(sum_of_squares, 0.5);
+
+        // If mid-waypoint achieved, proceed to end-waypoint to finish launch
+        if( norm_diff < 0.01 )
+        {
+            std::cout << "Midpoint achieved, slowing down..." << std::endl;
+            launchBallLastSegment();
+            launchCommanded = false;
+        }
+
+        else
+        {
+            std::cout << "Waiting to achieve midpoint, current norm = " << norm_diff << std::endl;
+        }
+    }
 }
 
 
@@ -223,29 +227,67 @@ void ball_launch_controller::jointStateCallback()
 
 }
 
-void ball_launch_controller::launchBall()
+void ball_launch_controller::launchBallFirstSegment()
 {
-    // Compute the IK
+    // Get current position from FK
     KDL::JntArray q_cur = getJointPos();
     KDL::Frame p_cur;
     fk_pos->JntToCart(q_cur, p_cur, -1);
 
-    KDL::Frame p_desired = p_cur;
-    KDL::Vector up(0.0, 0.0, 0.1);
-    p_desired.p += up;
+    // Compute mid-waypoint position
+    KDL::Frame p_mid_desired = p_cur;
+    KDL::Vector mid(0.0, 0.0, 0.1);
+    p_mid_desired.p += mid;
 
-    KDL::JntArray q_desired(6);
-    ik_pos->CartToJnt(q_cur, p_desired, q_desired);
+    // Get mid-waypoint joint state from IK
+    KDL::JntArray _q_mid_desired(6);
+    ik_pos->CartToJnt(q_cur, p_mid_desired, _q_mid_desired);
 
-    KDL::JntArray t_pose_velo(6);
-    t_pose_velo.data[0] = 0.0;
-    t_pose_velo.data[1] = 0.0;
-    t_pose_velo.data[2] = 0.0;
-    t_pose_velo.data[3] = 0.0;
-    t_pose_velo.data[4] = 0.0;
-    t_pose_velo.data[5] = 0.0;
+    // Set mid-waypoint twist velo
+    KDL::Vector rot(0.0, 0.0, 0.0);
+    KDL::Vector vel(0.0, 0.0, 5.0);
+    KDL::Twist v_desired;
+    v_desired.rot = rot;
+    v_desired.vel = vel;
 
-    setJointPos(q_desired, t_pose_velo);
+    // Get mid-waypoint joint velo from IK_vel
+    KDL::JntArray q_dot_desired(6);
+    ik_vel->CartToJnt(_q_mid_desired, v_desired, q_dot_desired);
+
+    // Send command for mid-waypoint
+    setJointPos(_q_mid_desired, q_dot_desired);
+    launchCommanded = true;
+    q_mid_desired = _q_mid_desired;
+}
+
+void ball_launch_controller::launchBallLastSegment()
+{
+    // Get current position from FK
+    KDL::JntArray q_cur = getJointPos();
+    KDL::Frame p_cur;
+    fk_pos->JntToCart(q_cur, p_cur, -1);
+
+    // Compute end-waypoint position
+    KDL::Frame p_end_desired = p_cur;
+    KDL::Vector end(0.0, 0.0, 0.01);
+    p_end_desired.p += end;
+
+    // Get end-waypoint joint state from IK
+    q_cur = getJointPos();
+    KDL::JntArray q_end_desired(6);
+    ik_pos->CartToJnt(q_cur, p_end_desired, q_end_desired);
+
+    // Set end-waypoint joint velo
+    KDL::JntArray zero_vel(6);
+    zero_vel.data[0] = 0.0;
+    zero_vel.data[1] = 0.0;
+    zero_vel.data[2] = 0.0;
+    zero_vel.data[3] = 0.0;
+    zero_vel.data[4] = 0.0;
+    zero_vel.data[5] = 0.0;
+
+    // Send command for mid-waypoint
+    setJointPos(q_end_desired, zero_vel);
 }
 
 

@@ -47,6 +47,9 @@ class ball_launch_controller : public RTT::TaskContext {
         KDL::Tree tree;
         KDL::Chain chain;
 
+        bool launchCommanded;
+        KDL::JntArray q_mid_desired;
+
 
     public : 
 
@@ -69,6 +72,7 @@ class ball_launch_controller : public RTT::TaskContext {
 
         void jointStateCallback();
 
-        void launchBall();
+        void launchBallFirstSegment();
+        void launchBallLastSegment();
 
 };
