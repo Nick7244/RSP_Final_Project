@@ -3,6 +3,9 @@
 #include <std_msgs/Float64MultiArray.h>
 
 #include <kdl/jntarray.hpp>
+#include <kdl_parser/kdl_parser.hpp>
+#include <kdl/chainfksolver.hpp>
+#include <kdl/chainiksolver.hpp>
 
 #include <rtt/TaskContext.hpp>
 #include <rtt/OutputPort.hpp>
@@ -25,6 +28,9 @@ class ball_launch_controller : public RTT::TaskContext {
 
     private :
 
+        ros::NodeHandle nh;
+        ros::Subscriber sub_js;
+
         RTT::OutputPort<std_msgs::Float64MultiArray> port_msr_jnt_state;
 
         ReflexxesAPI *rml;
@@ -33,6 +39,13 @@ class ball_launch_controller : public RTT::TaskContext {
         RMLPositionFlags flags;
 
         ur5_controller_state controller_state;
+
+        KDL::ChainFkSolverPos* fk_pos;
+        KDL::ChainIkSolverPos* ik_pos;
+        KDL::ChainIkSolverVel* ik_vel;
+
+        KDL::Tree tree;
+        KDL::Chain chain;
 
 
     public : 
@@ -53,5 +66,9 @@ class ball_launch_controller : public RTT::TaskContext {
 
         void commandTPose();
         void commandZeroPose();
+
+        void jointStateCallback();
+
+        void launchBall();
 
 };
