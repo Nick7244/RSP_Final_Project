@@ -1,10 +1,32 @@
 <robot name="kendama" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:macro name="kendama" params="parent">
+    <link name="ken_mount_link">
+      <visual>
+	<origin xyz="0 0 0.006" rpy="0 0 0"/>
+	<geometry>
+	  <cylinder radius="0.0375" length="0.012"/>
+	</geometry>
+	<material name="acrylic">
+	  <color rgba="0 0 0.75 0.5"/>
+	</material>
+      </visual>
+      <collision>
+	<geometry>
+	  <cylinder radius="0.0375" length="0.012"/>
+	</geometry>
+      </collision>
+    </link>
 
+    <joint name="ken_mount_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="ken_mount_link"/>
+    </joint>
+      
+    
     <link name="ken_link">
       <visual>
-	<origin xyz="0 0 0" rpy="1.5708 0 0"/>
+	<origin xyz="0 0 0.006" rpy="1.5708 0 0"/>
 	<geometry>
 	  <mesh filename = "file::///$(find kendama_description)/meshes/visual/ken.STL"
 		scale = "0.001 0.001 0.001"/>
@@ -22,7 +44,7 @@
     </link>
 
     <joint name="ken_joint" type="fixed">
-      <parent link="${parent}"/>
+      <parent link="ken_mount_link"/>
       <child link="ken_link"/>
     </joint>
     
