@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(ur5_kendama_controller_rtt)
+project(test_ball_pos)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -8,12 +8,8 @@ project(ur5_kendama_controller_rtt)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  kdl_parser
   roscpp
-  rtt_ros
-  rtt_rosnode
-  rtt_rosparam
-  rtt_std_msgs
+  ur5_kendama_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -73,7 +69,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
+#   ur5_kendama_msgs
 # )
 
 ################################################
@@ -107,8 +103,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES ur5_kendama_controller_rtt
-#  CATKIN_DEPENDS ReflexxesTypeII kdl_parser roscpp rtt_ros rtt_rosnode rtt_rosparam
+#  LIBRARIES test_ball_pos
+#  CATKIN_DEPENDS roscpp ur5_kendama_msgs
 #  DEPENDS system_lib
 )
 
@@ -123,19 +119,10 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-orocos_component( ball_launch_controller 
-  src/ball_launch_controller.cpp
-)
-
-target_link_libraries(ball_launch_controller
-  ${catkin_LIBRARIES}
-  ReflexxesTypeII
-)
-
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/ur5_kendama_controller_rtt.cpp
-# )
+add_library( ball_pos_pub
+  src/ball_position_publisher.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -145,7 +132,9 @@ target_link_libraries(ball_launch_controller
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/ur5_kendama_controller_rtt_node.cpp)
+add_executable( ball_pos_pub_node 
+  src/ball_position_publisher_node.cpp
+)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -158,9 +147,14 @@ target_link_libraries(ball_launch_controller
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(ball_pos_pub
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(ball_pos_pub_node 
+  ${catkin_LIBRARIES}
+  ball_pos_pub
+)
 
 #############
 ## Install ##
@@ -209,7 +203,7 @@ target_link_libraries(ball_launch_controller
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_ur5_kendama_controller_rtt.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_test_ball_pos.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

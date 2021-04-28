@@ -1,4 +1,4 @@
-#include <ur5_kendama_controller_rtt/ball_launch_controller.hpp>
+#include <ur5_kendama_track_ball_controller/ball_track_controller.hpp>
 
 #include <std_msgs/Float64.h>
 
@@ -7,21 +7,24 @@
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/frames.hpp>
 
+#include <vector>
+
 #include <rtt/Component.hpp> // This should come last in the include list
 
-ball_launch_controller::ball_launch_controller( const std::string& name ) 
+ball_track_controller::ball_track_controller( const std::string& name ) 
     : TaskContext(name),
     port_msr_jnt_state("Measured joint state"),
     controller_state(idle),
     launchCommanded(false),
-    prevNorm(1000)
+    prevNorm(1000),
+    ball_pos_sub(nh)
 {
-    std::cout << "ball_launch_controller::ball_launch_controller" << std::endl;
+    std::cout << "ball_track_controller::ball_track_controller" << std::endl;
 
     std::string robot_description_string;
     nh.param("/robot_description", robot_description_string, std::string());
 
-    sub_js = nh.subscribe("/joint_states", 10, &ball_launch_controller::jointStateCallback, this);
+    sub_js = nh.subscribe("/joint_states", 10, &ball_track_controller::jointStateCallback, this);
 
     // Obtain the IK solver
     if ( kdl_parser::treeFromString(robot_description_string, tree) )
@@ -52,17 +55,17 @@ ball_launch_controller::ball_launch_controller( const std::string& name )
 
     addPort("MsrJntState", port_msr_jnt_state);
 
-    addOperation("GetJointPos", &ball_launch_controller::getJointPos, this, RTT::OwnThread); 
-    addOperation("SetJointPos", &ball_launch_controller::setJointPos, this, RTT::OwnThread);
-    addOperation("ZeroPose", &ball_launch_controller::commandZeroPose, this, RTT::OwnThread);
-    addOperation("TPose", &ball_launch_controller::commandTPose, this, RTT::OwnThread);
-    addOperation("LaunchBall", &ball_launch_controller::launchBallFirstSegment, this, RTT::OwnThread);
+    addOperation("GetJointPos", &ball_track_controller::getJointPos, this, RTT::OwnThread); 
+    addOperation("SetJointPos", &ball_track_controller::setJointPos, this, RTT::OwnThread);
+    addOperation("ZeroPose", &ball_track_controller::commandZeroPose, this, RTT::OwnThread);
+    addOperation("TPose", &ball_track_controller::commandTPose, this, RTT::OwnThread);
+    addOperation("LaunchBall", &ball_track_controller::launchBallFirstSegment, this, RTT::OwnThread);
 }
 
 
-bool ball_launch_controller::configureHook() 
+bool ball_track_controller::configureHook() 
 {
-    std::cout << "ball_launch_controller::configureHook" << std::endl;
+    std::cout << "ball_track_controller::configureHook" << std::endl;
 
     // initialize trajectory generation objects
     rml = new ReflexxesAPI(6, getPeriod()); // gets period from task context object
@@ -100,14 +103,18 @@ bool ball_launch_controller::configureHook()
 }
 
 
-bool ball_launch_controller::startHook() 
+bool ball_track_controller::startHook() 
 {
-    std::cout << "ball_launch_controller::startHook" << std::endl;
+    std::cout << "ball_track_controller::startHook" << std::endl;
 }
 
 
-void ball_launch_controller::updateHook() 
+void ball_track_controller::updateHook() 
 {
+    std::vector<float> ballPos = ball_pos_sub.getBallPos();
+    std::cout << ballPos.at(0) << ", " << ballPos.at(1) << ", " << ballPos.at(2) << std::endl;
+
+
     // compute an iteration of the trajectory
     int result = rml->RMLPosition(*ip, op, flags);
 
@@ -157,19 +164,19 @@ void ball_launch_controller::updateHook()
 }
 
 
-void ball_launch_controller::stopHook() 
+void ball_track_controller::stopHook() 
 {
-    std::cout << "ball_launch_controller::stopHoop" << std::endl;
+    std::cout << "ball_track_controller::stopHoop" << std::endl;
 }
 
 
-void ball_launch_controller::cleanupHook() 
+void ball_track_controller::cleanupHook() 
 {
-    std::cout << "ball_launch_controller::cleanupHook" << std::endl;
+    std::cout << "ball_track_controller::cleanupHook" << std::endl;
 }
 
 
-KDL::JntArray ball_launch_controller::getJointPos()
+KDL::JntArray ball_track_controller::getJointPos()
 {
     // return the current joint position
     KDL::JntArray js(6);
@@ -182,7 +189,7 @@ KDL::JntArray ball_launch_controller::getJointPos()
 }
 
 
-void ball_launch_controller::setJointPos( const KDL::JntArray& q , const KDL::JntArray& q_dot )
+void ball_track_controller::setJointPos( const KDL::JntArray& q , const KDL::JntArray& q_dot )
 {
     std::cout << "Setting target of q3 to " << q.data[3] << "rad at " << q_dot.data[3] << "rad/s" << std::endl;
 
@@ -194,7 +201,7 @@ void ball_launch_controller::setJointPos( const KDL::JntArray& q , const KDL::Jn
     }
 }
 
-void ball_launch_controller::commandTPose()
+void ball_track_controller::commandTPose()
 {
     KDL::JntArray t_pose_coords(6);
     t_pose_coords.data[0] = 0.0;
@@ -215,7 +222,7 @@ void ball_launch_controller::commandTPose()
     setJointPos(t_pose_coords, t_pose_velo);
 }
 
-void ball_launch_controller::commandZeroPose()
+void ball_track_controller::commandZeroPose()
 {
     KDL::JntArray t_pose_coords(6);
     t_pose_coords.data[0] = 0.0;
@@ -236,7 +243,7 @@ void ball_launch_controller::commandZeroPose()
     setJointPos(t_pose_coords, t_pose_velo);
 }
 
-void ball_launch_controller::jointStateCallback(const sensor_msgs::JointState& js )
+void ball_track_controller::jointStateCallback(const sensor_msgs::JointState& js )
 {
     for (int i = 0; i < 6; i++)
     {
@@ -251,7 +258,7 @@ void ball_launch_controller::jointStateCallback(const sensor_msgs::JointState& j
 
 }
 
-void ball_launch_controller::launchBallFirstSegment()
+void ball_track_controller::launchBallFirstSegment()
 {
     // Get current position from FK
     KDL::JntArray q_cur = joint_state;
@@ -287,7 +294,7 @@ void ball_launch_controller::launchBallFirstSegment()
     q_mid_desired = _q_mid_desired;
 }
 
-void ball_launch_controller::launchBallLastSegment()
+void ball_track_controller::launchBallLastSegment()
 {
     // Get current position from FK
     KDL::JntArray q_cur = joint_state;
@@ -321,4 +328,4 @@ void ball_launch_controller::launchBallLastSegment()
 }
 
 
-ORO_CREATE_COMPONENT(ball_launch_controller) // register the RTT component
+ORO_CREATE_COMPONENT(ball_track_controller) // register the RTT component
