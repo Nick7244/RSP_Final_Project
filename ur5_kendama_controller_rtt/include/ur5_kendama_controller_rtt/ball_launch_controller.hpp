@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 
 #include <std_msgs/Float64MultiArray.h>
+#include <sensor_msgs/JointState.h>
 
 #include <kdl/jntarray.hpp>
 #include <kdl_parser/kdl_parser.hpp>
@@ -50,6 +51,10 @@ class ball_launch_controller : public RTT::TaskContext {
         bool launchCommanded;
         KDL::JntArray q_mid_desired;
 
+        KDL::JntArray joint_state;
+
+        float prevNorm;
+
 
     public : 
 
@@ -70,7 +75,7 @@ class ball_launch_controller : public RTT::TaskContext {
         void commandTPose();
         void commandZeroPose();
 
-        void jointStateCallback();
+        void jointStateCallback(const sensor_msgs::JointState& js );
 
         void launchBallFirstSegment();
         void launchBallLastSegment();
