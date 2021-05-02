@@ -1,6 +1,0 @@
-<launch>
-
-  <param name="robot_description"
-	 command="$(find xacro)/xacro --inorder '$(find kendama_description)/urdf/kendama.urdf.xacro'" />
-
-</launch>
