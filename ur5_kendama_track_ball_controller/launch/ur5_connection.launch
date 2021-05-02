@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<launch>
+  
+  <include file="$(find ur_modern_driver)/launch/ur5_bringup_compatible.launch">
+    <arg name="robot_ip" value="172.22.22.2"/>
+    <arg name="limited"  value="true"/>
+  </include>
+
+  <!-- Fake Calibration -->
+  <!--node pkg="rostopic" type="rostopic" name="fake_joint_calibration"
+        args="pub /calibrated std_msgs/Bool true" /-->
+  
+  <!-- joint_state_controller -->
+  <rosparam file="$(find ur_gazebo)/controller/joint_state_controller.yaml" command="load"/>
+  
+  <node name="joint_state_controller_spawner" 
+        pkg="controller_manager" 
+        type="controller_manager" 
+        args="spawn joint_state_controller" 
+        respawn="false" 
+        output="screen"/>
+
+  <!-- start this controller -->
+  <rosparam file="$(find ur_gazebo)/controller/arm_controller_ur5.yaml" command="load"/>
+
+  <node name="arm_controller_spawner" 
+        pkg="controller_manager" 
+        type="controller_manager"  
+        respawn="false" 
+        output="screen"
+        args="spawn arm_controller"/>
+
+  <!-- load other controllers -->
+  <node name="joint_group_position_controller_spawner" 
+      pkg="controller_manager" 
+      type="controller_manager" 
+      respawn="false" 
+      output="screen" 
+      args="load joint_group_position_controller" />
+
+</launch>

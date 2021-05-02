@@ -8,7 +8,12 @@ project(test_ball_pos)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  kdl_parser
   roscpp
+  rtt_ros
+  rtt_rosnode
+  rtt_rosparam
+  rtt_std_msgs
   ur5_kendama_msgs
 )
 
@@ -133,7 +138,15 @@ add_library( ball_pos_pub
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable( ball_pos_pub_node 
-  src/ball_position_publisher_node.cpp
+ src/ball_position_publisher_node.cpp
+)
+
+orocos_component( ball_pos_deployer 
+  src/ball_position_deployer.cpp
+)
+
+target_link_libraries(ball_pos_deployer
+  ${catkin_LIBRARIES}
 )
 
 ## Rename C++ executable without prefix

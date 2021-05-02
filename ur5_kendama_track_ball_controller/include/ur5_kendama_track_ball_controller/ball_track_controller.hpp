@@ -6,6 +6,7 @@
 #include <sensor_msgs/JointState.h>
 
 #include <kdl/jntarray.hpp>
+#include <kdl/frames.hpp>
 #include <kdl_parser/kdl_parser.hpp>
 #include <kdl/chainfksolver.hpp>
 #include <kdl/chainiksolver.hpp>
@@ -18,15 +19,7 @@
 #include <ReflexxesTypeII/RMLPositionInputParameters.h>
 #include <ReflexxesTypeII/RMLPositionOutputParameters.h>
 
-enum ur5_controller_state 
-{
-    idle,
-    launch,
-    follow,
-    craddle
-};
 
-// This is the component that actuall connects to the hardware
 class ball_track_controller : public RTT::TaskContext {
 
     private :
@@ -41,8 +34,6 @@ class ball_track_controller : public RTT::TaskContext {
         RMLPositionOutputParameters* op;
         RMLPositionFlags flags;
 
-        ur5_controller_state controller_state;
-
         KDL::ChainFkSolverPos* fk_pos;
         KDL::ChainIkSolverPos* ik_pos;
         KDL::ChainIkSolverVel* ik_vel;
@@ -50,14 +41,12 @@ class ball_track_controller : public RTT::TaskContext {
         KDL::Tree tree;
         KDL::Chain chain;
 
-        bool launchCommanded;
-        KDL::JntArray q_mid_desired;
-
         KDL::JntArray joint_state;
 
-        float prevNorm;
-
         ball_pos_subscriber ball_pos_sub;
+
+        float robotHeight;
+        KDL::Rotation robotOrientation;
 
 
     public : 
@@ -76,12 +65,10 @@ class ball_track_controller : public RTT::TaskContext {
         KDL::JntArray getJointPos();
         void setJointPos( const KDL::JntArray& q , const KDL::JntArray& q_dot );
 
-        void commandTPose();
-        void commandZeroPose();
-
         void jointStateCallback(const sensor_msgs::JointState& js );
 
-        void launchBallFirstSegment();
-        void launchBallLastSegment();
+        void initializeHeight(float z);
+
+        void trackBall(float ball_x, float ball_y);
 
 };
