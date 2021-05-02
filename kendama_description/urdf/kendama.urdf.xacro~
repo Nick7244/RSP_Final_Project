@@ -1,7 +1,0 @@
-<robot name="kendama" xmlns:xacro="http://www.ros.org/wiki/xacro">
-
-  <xacro:include filename="(find kendama_description)/urdf/kendama.xacro"/>
-
-  <xacro:kendama/>
-
-</robot>
