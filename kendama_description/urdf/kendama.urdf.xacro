@@ -1,9 +1,9 @@
 <robot name="kendama_on_ur5" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:include filename="$(find ur_description)/urdf/ur5.urdf.xacro"/>
+<!--  <xacro:include filename="$(find ur_description)/urdf/ur5.urdf.xacro"/> -->
   <xacro:include filename="$(find kendama_description)/urdf/kendama.xacro"/>
 
-  <xacro:ur5_robot prefix="" joint_limited="true"/>
+<!--  <xacro:ur5_robot prefix="" joint_limited="true"/> -->
   
   <xacro:kendama parent="tool0"/>
 
