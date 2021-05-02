@@ -3,15 +3,17 @@
   <xacro:macro name="kendama" params="parent">
     <link name="ken_mount_link">
       <visual>
-	<origin xyz="0 0 0.006" rpy="0 0 0"/>
+	<origin xyz="0 0 0.006" rpy="-1.5708 0 0.7854"/>
 	<geometry>
-	  <cylinder radius="0.0375" length="0.012"/>
+	  <mesh filename = "file::///$(find kendama_description)/meshes/visual/kendama_mount.STL"
+		scale = "0.001 0.001 0.001"/>
 	</geometry>
-	<material name="acrylic">
+	<material name="blue_acrylic">
 	  <color rgba="0 0 0.75 0.5"/>
 	</material>
       </visual>
       <collision>
+	<origin xyz="0 0 0.006" rpy="0 0 0"/>
 	<geometry>
 	  <cylinder radius="0.0375" length="0.012"/>
 	</geometry>
@@ -32,7 +34,7 @@
 		scale = "0.001 0.001 0.001"/>
 	</geometry>
 	<material name = "wood">
-	  <color rgba="0.59 0.44 0.20 0.5"/>
+	  <color rgba="0.59 0.44 0.20 1"/>
 	</material>
       </visual>
       <collision>
