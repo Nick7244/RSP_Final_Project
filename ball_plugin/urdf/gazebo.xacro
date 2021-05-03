@@ -1,0 +1,65 @@
+<robot name="ur5" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:property name="wheel_separation" value="0.070"/>
+    <xacro:property name="wheel_radius" value="0.034"/>
+
+    <xacro:macro name="edumip_balance" params="parent left_joint right_joint">
+
+        <gazebo>
+            <plugin name="edumip_balance_ros_gazebo_plugin" filename="libedumip_balance_ros_gazebo_plugin.so">
+                <rosDebugLevel>3</rosDebugLevel>
+                <updateRate>100</updateRate>
+                <robotBaseFrame>${parent}</robotBaseFrame>
+                <leftJoint>${left_joint}</leftJoint>
+                <rightJoint>${right_joint}</rightJoint>
+                <wheelSeparation>0.070</wheelSeparation>
+                <wheelDiameter>0.068</wheelDiameter>
+                <commandTopic>/edumip/cmd</commandTopic>
+                <stateTopic>/edumip/state</stateTopic>
+            </plugin>
+        </gazebo>
+
+    </xacro:macro>
+
+    <xacro:macro name="edumip_triangulation" params="ball">
+        <link name="test_base_link">
+            <visual>
+                <origin xyz="0 0 2" rpy="0 0 0"/>
+
+                <geometry> 
+                    <box size="0 0 0"/>
+                </geometry>
+                
+                <material name="Blue">
+                    <color rgba="0 0 1 0.65"/>
+                </material>
+            </visual>
+            
+            <collision>
+                <origin xyz="0 0 2" rpy="0 0 0"/>
+
+                <geometry> 
+                    <box size="0 0 0"/>
+                </geometry>
+            </collision>
+            
+            <inertial>
+                <origin xyz="0 0 2" rpy="0 0 0"/>
+                <mass value="0"/>
+                <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+            </inertial>
+        </link>
+
+        <gazebo>
+            <plugin name="ball_plugin" filename="libball_plugin.so">
+                <rosDebugLevel>3</rosDebugLevel>
+                <!--towerA>${towerA}</towerA>
+                <towerB>${towerB}</towerB-->
+                <ball>${ball}</ball>
+            </plugin>
+        </gazebo>
+
+    </xacro:macro>
+
+
+</robot>

@@ -1,0 +1,9 @@
+<robot xmlns:xacro="http://wiki.ros.org/xacro"
+       name="ball" >
+
+  <xacro:include filename="$(find ball_plugin)/urdf/gazebo.xacro"/>
+  <xacro:edumip_balance parent="base_link" left_joint="left_wheel_joint" right_joint="right_wheel_joint"/>
+  <!--xacro:edumip_triangulation towerA="towerA" towerB="towerB" ball="ball"/-->
+  <xacro:edumip_triangulation ball="ball"/>
+
+</robot>

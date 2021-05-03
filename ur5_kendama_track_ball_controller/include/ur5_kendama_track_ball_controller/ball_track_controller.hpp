@@ -48,6 +48,8 @@ class ball_track_controller : public RTT::TaskContext {
         float robotHeight;
         KDL::Rotation robotOrientation;
 
+        bool firstJntState;
+
 
     public : 
 

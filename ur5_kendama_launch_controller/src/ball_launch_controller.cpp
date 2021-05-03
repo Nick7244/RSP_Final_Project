@@ -76,8 +76,8 @@ bool ball_launch_controller::configureHook()
         ip->CurrentVelocityVector->VecData[i] = 0.0;
         ip->CurrentAccelerationVector->VecData[i] = 0.0;
 
-        ip->MaxAccelerationVector->VecData[i] = 100.0;
-        ip->MaxJerkVector->VecData[i] = 500.0;
+        ip->MaxAccelerationVector->VecData[i] = 5;//100.0;
+        ip->MaxJerkVector->VecData[i] = 10;//500.0;
 
         ip->SelectionVector->VecData[i] = true;
 
@@ -85,12 +85,12 @@ bool ball_launch_controller::configureHook()
         ip->TargetVelocityVector->VecData[i] = 0.0;
     }
 
-    ip->MaxVelocityVector->VecData[0] = 3.15;
-    ip->MaxVelocityVector->VecData[1] = 3.15;
-    ip->MaxVelocityVector->VecData[2] = 3.15;
-    ip->MaxVelocityVector->VecData[3] = 3.20;
-    ip->MaxVelocityVector->VecData[4] = 3.20;
-    ip->MaxVelocityVector->VecData[5] = 3.20;
+    ip->MaxVelocityVector->VecData[0] = 0.5;//3.15;
+    ip->MaxVelocityVector->VecData[1] = 0.5;//3.15;
+    ip->MaxVelocityVector->VecData[2] = 0.5;//3.15;
+    ip->MaxVelocityVector->VecData[3] = 0.5;//3.20;
+    ip->MaxVelocityVector->VecData[4] = 0.5;//3.20;
+    ip->MaxVelocityVector->VecData[5] = 0.5;//3.20;
 
     std::cout << ip->TargetPositionVector->VecData[1] << std::endl;
 

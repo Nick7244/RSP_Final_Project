@@ -15,7 +15,8 @@ ball_track_controller::ball_track_controller( const std::string& name )
     : TaskContext(name),
     port_msr_jnt_state("Measured joint state"),
     ball_pos_sub(nh),
-    robotHeight(0.0)
+    robotHeight(0.0),
+    firstJntState(true)
 {
     std::cout << "ball_track_controller::ball_track_controller" << std::endl;
 
@@ -86,6 +87,24 @@ bool ball_track_controller::configureHook()
     ip->MaxVelocityVector->VecData[3] = 3.20;
     ip->MaxVelocityVector->VecData[4] = 3.20;
     ip->MaxVelocityVector->VecData[5] = 3.20;
+
+    ip->TargetPositionVector->VecData[0] = 0.0;
+    ip->TargetVelocityVector->VecData[0] = 0.0;
+    
+    ip->TargetPositionVector->VecData[1] = -1.5708;
+    ip->TargetVelocityVector->VecData[1] = 0.0;
+    
+    ip->TargetPositionVector->VecData[2] = 1.8708;
+    ip->TargetVelocityVector->VecData[2] = 0.0;
+    
+    ip->TargetPositionVector->VecData[3] = -0.3;
+    ip->TargetVelocityVector->VecData[3] = 0.0;
+    
+    ip->TargetPositionVector->VecData[4] = 1.5708;
+    ip->TargetVelocityVector->VecData[4] = 0.0;
+    
+    ip->TargetPositionVector->VecData[5] = 0.0;
+    ip->TargetVelocityVector->VecData[5] = 0.0;
 }
 
 
@@ -165,8 +184,6 @@ KDL::JntArray ball_track_controller::getJointPos()
 
 void ball_track_controller::setJointPos( const KDL::JntArray& q , const KDL::JntArray& q_dot )
 {
-    std::cout << "Setting target of q3 to " << q.data[3] << "rad at " << q_dot.data[3] << "rad/s" << std::endl;
-
     // extract out components of the input joint array to set as target positions
     for ( int i = 0; i < 6; i++ )
     {
@@ -189,46 +206,54 @@ void ball_track_controller::jointStateCallback(const sensor_msgs::JointState& js
     joint_state.data[0] = future0;
     joint_state.data[2] = future2;
 
+    if ( firstJntState )
+    {
+        KDL::JntArray q_cur = joint_state;
+        KDL::Frame p_cur;
+        fk_pos->JntToCart(q_cur, p_cur, -1);
+
+        robotHeight = p_cur.p.z();
+        robotOrientation = p_cur.M;
+
+        firstJntState = false;
+
+        std::cout << "Initialized height: " << robotHeight << std::endl;
+    }
+
 }
 
 
 void ball_track_controller::trackBall(float ball_x, float ball_y)
 {
-    // Get current cartesian position
-    KDL::JntArray q_cur = joint_state;
-    KDL::Frame p_cur;
-    fk_pos->JntToCart(q_cur, p_cur, -1);
-
-    if ( robotHeight == 0.0 )
+    if ( !firstJntState )
     {
-        robotHeight = p_cur.p.z();
-        robotOrientation = p_cur.M;
+        // Get current cartesian position
+        KDL::JntArray q_cur = joint_state;
+        KDL::Frame p_cur;
+        fk_pos->JntToCart(q_cur, p_cur, -1);
+
+        // Compute  position of being underneath the ball
+        KDL::Frame p_desired = p_cur;
+        KDL::Vector ball_pos(ball_x, ball_y, robotHeight);
+        p_desired.p = ball_pos;
+        p_desired.M = robotOrientation;
+
+        // Compute inverse kinematics to ball x-y position
+        KDL::JntArray q_desired(6);
+        ik_pos->CartToJnt(q_cur, p_desired, q_desired);
+
+        // Set zero desired joint velo
+        KDL::JntArray zero_vel(6);
+        zero_vel.data[0] = 0.0;
+        zero_vel.data[1] = 0.0;
+        zero_vel.data[2] = 0.0;
+        zero_vel.data[3] = 0.0;
+        zero_vel.data[4] = 0.0;
+        zero_vel.data[5] = 0.0;
+
+        // Send command for mid-waypoint
+        setJointPos(q_desired, zero_vel);
     }
-
-    // Compute  position of being underneath the ball
-    KDL::Frame p_desired = p_cur;
-    KDL::Vector ball_pos(ball_x, ball_y, robotHeight);
-    p_desired.p = ball_pos;
-    p_desired.M = robotOrientation;
-
-    // Compute inverse kinematics to ball x-y position
-    KDL::JntArray q_desired(6);
-    ik_pos->CartToJnt(q_cur, p_desired, q_desired);
-
-    // Set zero desired joint velo
-    KDL::JntArray zero_vel(6);
-    zero_vel.data[0] = 0.0;
-    zero_vel.data[1] = 0.0;
-    zero_vel.data[2] = 0.0;
-    zero_vel.data[3] = 0.0;
-    zero_vel.data[4] = 0.0;
-    zero_vel.data[5] = 0.0;
-
-    std::cout << "Sending ball position command..." << std::endl;
-    std:cout << "Current q3 is " << q_cur.data[3] << "rad" << std::endl;
-
-    // Send command for mid-waypoint
-    setJointPos(q_desired, zero_vel);
 }
 
 
