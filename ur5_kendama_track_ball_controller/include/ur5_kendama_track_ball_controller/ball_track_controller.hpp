@@ -50,6 +50,9 @@ class ball_track_controller : public RTT::TaskContext {
 
         bool firstJntState;
 
+        double timeLastTrack;
+        bool firstTrack;
+
 
     public : 
 
@@ -71,6 +74,6 @@ class ball_track_controller : public RTT::TaskContext {
 
         void initializeHeight(float z);
 
-        void trackBall(float ball_x, float ball_y);
+        void trackBall(float ball_x, float ball_y, float ball_z, double ballVertVelo);
 
 };

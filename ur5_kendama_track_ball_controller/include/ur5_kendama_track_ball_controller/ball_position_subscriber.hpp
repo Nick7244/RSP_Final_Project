@@ -10,6 +10,12 @@ class ball_pos_subscriber {
         ros::NodeHandle nh;
         ros::Subscriber sub;
         std::vector<float> ball_pos;
+        double verticalVelo;
+        
+
+        double timeLastBallPos;
+        double lastBallHeight;
+        bool firstBallPos;
 
     public: 
 
@@ -18,4 +24,5 @@ class ball_pos_subscriber {
 
         void callback( const ur5_kendama_msgs::ball_position& msg );
         std::vector<float> getBallPos();
+        double getBallVelo();
 };
