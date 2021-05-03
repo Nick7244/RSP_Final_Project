@@ -11,7 +11,7 @@
   </include>
 
   <!-- send robot urdf to param server -->
-  <include file="$(find ur_description)/launch/ur5_upload.launch">
+  <include file="$(find ball_plugin)/launch/ur5_upload.launch">
     <arg name="limited" value="$(arg limited)"/>
   </include>
 
