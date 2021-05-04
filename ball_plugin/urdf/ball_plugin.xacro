@@ -1,0 +1,17 @@
+<robot name="ball_plugin" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:macro name="ball_plugin" params="ball">
+    
+        <link name="ball_plugin_link"/>
+
+        <gazebo>
+            <plugin name="ball_plugin" filename="libball_plugin.so">
+                <rosDebugLevel>3</rosDebugLevel>
+                <ball>${ball}</ball>
+            </plugin>
+        </gazebo>
+
+    </xacro:macro>
+
+
+</robot>

@@ -1,0 +1,6 @@
+<robot name="ball_plugin" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find ball_plugin)/urdf/ball_plugin.xacro"/>
+  <xacro:ball_plugin ball="ball"/>
+
+</robot>

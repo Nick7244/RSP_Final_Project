@@ -1,6 +1,4 @@
-<?xml version="1.0"?>
-<robot xmlns:xacro="http://wiki.ros.org/xacro"
-       name="ur5" >
+<robot name="ur5_kendama" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface"/>
 

@@ -53,14 +53,17 @@
   <build_depend>ur5_kendama_launch_controller</build_depend>
   <build_depend>ur5_kendama_msgs</build_depend>
   <build_depend>ur5_kendama_track_ball_controller</build_depend>
+  <build_depend>ur_modern_driver</build_depend>
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>ur5_kendama_launch_controller</build_export_depend>
   <build_export_depend>ur5_kendama_msgs</build_export_depend>
   <build_export_depend>ur5_kendama_track_ball_controller</build_export_depend>
+  <build_export_depend>ur_modern_driver</build_export_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>ur5_kendama_launch_controller</exec_depend>
   <exec_depend>ur5_kendama_msgs</exec_depend>
   <exec_depend>ur5_kendama_track_ball_controller</exec_depend>
+  <exec_depend>ur_modern_driver</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

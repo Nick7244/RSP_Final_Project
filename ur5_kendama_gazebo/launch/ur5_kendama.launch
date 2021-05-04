@@ -1,0 +1,29 @@
+<launch>
+
+    <arg name="limited" default="false"  doc="If true, limits joint range [-PI, PI] on all joints." />
+    <arg name="paused" default="false" doc="Starts gazebo in paused mode" />
+    <arg name="gui" default="true" doc="Starts gazebo gui" />
+    
+    <!-- startup simulated world -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+      <arg name="world_name" default="$(find ur5_kendama_gazebo)/worlds/ur5_with_ball.world"/>
+      <arg name="paused" value="$(arg paused)"/>
+      <arg name="gui" value="$(arg gui)"/>
+    </include>
+
+    <!-- send robot urdf to param server -->
+    <include file="$(find ur5_kendama_description)/launch/ur5_kendama_upload.launch">
+      <arg name="limited" value="$(arg limited)"/>
+    </include>
+
+    <!-- push robot_description & ball_description to factory and spawn robot & ball_plugin in gazebo -->
+    <node name="spawn_gazebo_robot_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model robot -z 0.1" respawn="false" output="screen"/>
+    <node name="spawn_gazebo_ball_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param ball_description -model ball_plugin" respawn="false" output="screen" />
+
+    <include file="$(find ur_gazebo)/launch/controller_utils.launch"/>
+
+    <!-- start this controller -->
+    <rosparam file="$(find ur_gazebo)/controller/arm_controller_ur5.yaml" command="load"/>
+    <node name="joint_group_position_spawner" pkg="controller_manager" type="controller_manager" args="spawn joint_group_position_controller" respawn="false" output="screen"/>
+
+</launch>
