@@ -20,6 +20,9 @@
     <node name="spawn_gazebo_robot_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model robot -z 0.1" respawn="false" output="screen"/>
     <node name="spawn_gazebo_ball_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param ball_description -model ball_plugin" respawn="false" output="screen" />
 
+    <!-- set parameter name for end-effector used in simulation -->
+    <param name="end_effector_name" value="cup_link"/>
+
     <include file="$(find ur_gazebo)/launch/controller_utils.launch"/>
 
     <!-- start this controller -->

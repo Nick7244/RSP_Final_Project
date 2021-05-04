@@ -21,12 +21,15 @@ ball_launch_controller::ball_launch_controller( const std::string& name )
     std::string robot_description_string;
     nh.param("/robot_description", robot_description_string, std::string());
 
+    std::string end_effector_string;
+    nh.param("/end_effector_name", end_effector_string, std::string());
+
     sub_js = nh.subscribe("/joint_states", 10, &ball_launch_controller::jointStateCallback, this);
 
     // Obtain the IK solver
     if ( kdl_parser::treeFromString(robot_description_string, tree) )
     {
-        if ( tree.getChain("base_link", "ee_link", chain) )
+        if ( tree.getChain("base_link", end_effector_string, chain) )
         {
             fk_pos = new KDL::ChainFkSolverPos_recursive(chain);
             ik_vel = new KDL::ChainIkSolverVel_pinv(chain);
@@ -76,8 +79,9 @@ bool ball_launch_controller::configureHook()
         ip->CurrentVelocityVector->VecData[i] = 0.0;
         ip->CurrentAccelerationVector->VecData[i] = 0.0;
 
-        ip->MaxAccelerationVector->VecData[i] = 10.0;
-        ip->MaxJerkVector->VecData[i] = 30.0;
+        ip->MaxVelocityVector->VecData[i] = 1.0;
+        ip->MaxAccelerationVector->VecData[i] = 1.0;
+        ip->MaxJerkVector->VecData[i] = 1.0;
 
         ip->SelectionVector->VecData[i] = true;
 
@@ -85,18 +89,6 @@ bool ball_launch_controller::configureHook()
         ip->TargetVelocityVector->VecData[i] = 0.0;
     }
 
-    ip->MaxVelocityVector->VecData[0] = 3.15;
-    ip->MaxVelocityVector->VecData[1] = 3.15;
-    ip->MaxVelocityVector->VecData[2] = 3.15;
-    ip->MaxVelocityVector->VecData[3] = 3.20;
-    ip->MaxVelocityVector->VecData[4] = 3.20;
-    ip->MaxVelocityVector->VecData[5] = 3.20;
-
-    std::cout << ip->TargetPositionVector->VecData[1] << std::endl;
-
-    //commandTPose();
-
-    std::cout << ip->TargetPositionVector->VecData[1] << std::endl;
 }
 
 
@@ -153,6 +145,14 @@ void ball_launch_controller::updateHook()
             prevNorm = norm_diff;
         }
     }
+
+
+    // Get current position from FK
+    //KDL::JntArray q_cur = joint_state;
+    //KDL::Frame p_cur;
+    //fk_pos->JntToCart(q_cur, p_cur, -1);
+    // 0.817194, 0.303569
+    //std::cout << p_cur.p.x() << ", " << p_cur.p.y() << ", " << p_cur.p.z() << std::endl; 
 }
 
 
@@ -291,7 +291,7 @@ void ball_launch_controller::launchBallFirstSegment()
 
     // Set mid-waypoint twist velo
     KDL::Vector rot(0.0, 0.0, 0.0);
-    KDL::Vector vel(0.0, 0.0, 3.0);
+    KDL::Vector vel(0.0, 0.0, 3.5);
     KDL::Twist v_desired;
     v_desired.rot = rot;
     v_desired.vel = vel;
@@ -302,13 +302,25 @@ void ball_launch_controller::launchBallFirstSegment()
 
     std::cout << "Sending midpoint command..." << std::endl;
 
+    std::cout << "Current joints: ";
+    
+    for ( int i = 0; i < 6; i++ )
+    {
+        std::cout << q_cur.data[i] << ", ";
+    }
+
+    std::cout << std::endl;
+    
     // Set velo/accel limits
     for ( int i = 0; i < 6; i++ )
     {
-        ip->MaxVelocityVector->VecData[i] = 12;
-        ip->MaxAccelerationVector->VecData[i] = 100.0;
-        ip->MaxJerkVector->VecData[i] = 300.0;
+        ip->MaxVelocityVector->VecData[i] = 15;
+        ip->MaxAccelerationVector->VecData[i] = 150.0;
+        ip->MaxJerkVector->VecData[i] = 400.0;
+        std::cout << _q_mid_desired.data[i] << ", ";
     }
+
+    std::cout << std::endl;
 
     // Send command for mid-waypoint
     setJointPos(_q_mid_desired, q_dot_desired);
@@ -347,10 +359,13 @@ void ball_launch_controller::launchBallLastSegment()
     // Set velo/accel limits
     for ( int i = 0; i < 6; i++ )
     {
-        ip->MaxVelocityVector->VecData[i] = 12;
-        ip->MaxAccelerationVector->VecData[i] = 100.0;
-        ip->MaxJerkVector->VecData[i] = 300.0;
+        ip->MaxVelocityVector->VecData[i] = 15;
+        ip->MaxAccelerationVector->VecData[i] = 150.0;
+        ip->MaxJerkVector->VecData[i] = 400.0;
+        std::cout << q_end_desired.data[i] << ", ";
     }
+
+    std::cout << std::endl << std::endl;
 
     // Send command for mid-waypoint
     setJointPos(q_end_desired, zero_vel);

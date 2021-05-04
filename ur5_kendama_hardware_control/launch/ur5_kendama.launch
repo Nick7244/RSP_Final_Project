@@ -8,4 +8,7 @@
         <arg name="stopped_controllers" value="pos_based_pos_traj_controller joint_group_vel_controller vel_based_pos_traj_controller"/>
     </include>
 
+    <!-- set parameter name for end-effector used with real robot -->
+    <param name="end_effector_name" value="ee_link"/>
+
 </launch>
