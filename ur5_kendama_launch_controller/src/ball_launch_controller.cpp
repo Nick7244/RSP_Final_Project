@@ -26,7 +26,7 @@ ball_launch_controller::ball_launch_controller( const std::string& name )
     // Obtain the IK solver
     if ( kdl_parser::treeFromString(robot_description_string, tree) )
     {
-        if ( tree.getChain("base_link", "ee_link", chain) )
+        if ( tree.getChain("base_link", "cup_link", chain) )
         {
             fk_pos = new KDL::ChainFkSolverPos_recursive(chain);
             ik_vel = new KDL::ChainIkSolverVel_pinv(chain);
@@ -76,8 +76,8 @@ bool ball_launch_controller::configureHook()
         ip->CurrentVelocityVector->VecData[i] = 0.0;
         ip->CurrentAccelerationVector->VecData[i] = 0.0;
 
-        ip->MaxAccelerationVector->VecData[i] = 5;//100.0;
-        ip->MaxJerkVector->VecData[i] = 10;//500.0;
+        ip->MaxAccelerationVector->VecData[i] = 100000.0;
+        ip->MaxJerkVector->VecData[i] = 500000.0;
 
         ip->SelectionVector->VecData[i] = true;
 
@@ -85,16 +85,16 @@ bool ball_launch_controller::configureHook()
         ip->TargetVelocityVector->VecData[i] = 0.0;
     }
 
-    ip->MaxVelocityVector->VecData[0] = 0.5;//3.15;
-    ip->MaxVelocityVector->VecData[1] = 0.5;//3.15;
-    ip->MaxVelocityVector->VecData[2] = 0.5;//3.15;
-    ip->MaxVelocityVector->VecData[3] = 0.5;//3.20;
-    ip->MaxVelocityVector->VecData[4] = 0.5;//3.20;
-    ip->MaxVelocityVector->VecData[5] = 0.5;//3.20;
+    ip->MaxVelocityVector->VecData[0] = 3000.15;
+    ip->MaxVelocityVector->VecData[1] = 3000.15;
+    ip->MaxVelocityVector->VecData[2] = 3000.15;
+    ip->MaxVelocityVector->VecData[3] = 3000.20;
+    ip->MaxVelocityVector->VecData[4] = 3000.20;
+    ip->MaxVelocityVector->VecData[5] = 3000.20;
 
     std::cout << ip->TargetPositionVector->VecData[1] << std::endl;
 
-    commandTPose();
+    //commandTPose();
 
     std::cout << ip->TargetPositionVector->VecData[1] << std::endl;
 }
@@ -184,7 +184,16 @@ KDL::JntArray ball_launch_controller::getJointPos()
 
 void ball_launch_controller::setJointPos( const KDL::JntArray& q , const KDL::JntArray& q_dot )
 {
-    std::cout << "Setting target of q3 to " << q.data[3] << "rad at " << q_dot.data[3] << "rad/s" << std::endl;
+    float max = 0.0;
+
+    for ( int i = 0; i < 6; i++ )
+    {
+        if ( q_dot.data[i] > max )
+        {
+            max = q_dot.data[i];
+        }
+    }
+    std::cout << "Setting target of q3 to " << q.data[3] << "rad at " << max << "rad/s" << std::endl;
 
     // extract out components of the input joint array to set as target positions
     for ( int i = 0; i < 6; i++ )
@@ -260,7 +269,7 @@ void ball_launch_controller::launchBallFirstSegment()
 
     // Compute mid-waypoint position
     KDL::Frame p_mid_desired = p_cur;
-    KDL::Vector mid(0.0, 0.0, 0.1);
+    KDL::Vector mid(0.0, 0.0, 0.03);
     p_mid_desired.p += mid;
 
     // Get mid-waypoint joint state from IK
@@ -269,7 +278,7 @@ void ball_launch_controller::launchBallFirstSegment()
 
     // Set mid-waypoint twist velo
     KDL::Vector rot(0.0, 0.0, 0.0);
-    KDL::Vector vel(0.0, 0.0, 0.8);
+    KDL::Vector vel(0.0, 0.0, 20.0);
     KDL::Twist v_desired;
     v_desired.rot = rot;
     v_desired.vel = vel;
@@ -296,7 +305,7 @@ void ball_launch_controller::launchBallLastSegment()
 
     // Compute end-waypoint position
     KDL::Frame p_end_desired = p_cur;
-    KDL::Vector end(0.0, 0.0, 0.01);
+    KDL::Vector end(0.0, 0.0, 0.001);
     p_end_desired.p += end;
 
     // Get end-waypoint joint state from IK

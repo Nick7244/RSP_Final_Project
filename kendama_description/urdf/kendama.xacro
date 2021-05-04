@@ -62,7 +62,7 @@
 			<origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
 
 			<geometry>
-				<mesh filename="file://$(find kendama_description)/meshes/collision/ken.STL" 
+				<mesh filename="file://$(find kendama_description)/meshes/collision/ken_collision.STL" 
 					scale="0.001 0.001 0.001"/>
 			</geometry>
 

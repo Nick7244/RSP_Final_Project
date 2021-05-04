@@ -26,6 +26,6 @@
 
     <param  name="ball_description"
             command="$(find xacro)/xacro --inorder '$(find ball_plugin)/urdf/test.urdf.xacro'"/>
-    <node name="spawn_gazebo_model2" pkg="gazebo_ros" type="spawn_model" args="-urdf -param ball_description -model robot2 -z 0.1" respawn="false" output="screen" />
+    <node name="spawn_gazebo_model2" pkg="gazebo_ros" type="spawn_model" args="-urdf -param ball_description -model ball -z 1.0" respawn="false" output="screen" />
 
 </launch>

@@ -30,7 +30,7 @@ ball_track_controller::ball_track_controller( const std::string& name )
     // Obtain the IK solver
     if ( kdl_parser::treeFromString(robot_description_string, tree) )
     {
-        if ( tree.getChain("base_link", "ee_link", chain) )
+        if ( tree.getChain("base_link", "cup_link", chain) )
         {
             fk_pos = new KDL::ChainFkSolverPos_recursive(chain);
             ik_vel = new KDL::ChainIkSolverVel_pinv(chain);
