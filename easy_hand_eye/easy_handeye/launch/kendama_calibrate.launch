@@ -8,13 +8,7 @@
   <include file="$(find realsense_camera)/launch/r200_nodelet_default.launch"/>
   
   <!-- start checkerboard tracking -->
-  <include file="$(find tuw_checkerboard)/launch/demo.launch">
-    <arg name="image" value="/camera/color/image_raw"/>
-    <arg name="checkerboard_columns" value="7"/>
-    <arg name="checkerboard_rows" value="5"/>
-    <arg name="checkerboard_square_size" value="0.028"/>
-    <arg name="rviz" value="true"/>
-  </include>
+  <include file="$(find tuw_checkerboard)/launch/kendama_checkerboard.launch"/>
 
   <!-- start easy_handeye -->
   <include file="$(find easy_handeye)/launch/calibrate.launch">
