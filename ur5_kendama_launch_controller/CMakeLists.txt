@@ -123,7 +123,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-orocos_component( ball_launch_controller 
+add_library( ball_launch_controller 
   src/ball_launch_controller.cpp
 )
 

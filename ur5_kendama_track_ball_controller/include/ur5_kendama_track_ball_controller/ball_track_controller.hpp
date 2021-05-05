@@ -7,39 +7,25 @@
 
 #include <kdl/jntarray.hpp>
 #include <kdl/frames.hpp>
-#include <kdl_parser/kdl_parser.hpp>
 #include <kdl/chainfksolver.hpp>
 #include <kdl/chainiksolver.hpp>
 
-#include <rtt/TaskContext.hpp>
-#include <rtt/OutputPort.hpp>
-
 #include <ReflexxesTypeII/ReflexxesAPI.h>
-#include <ReflexxesTypeII/RMLPositionFlags.h>
 #include <ReflexxesTypeII/RMLPositionInputParameters.h>
-#include <ReflexxesTypeII/RMLPositionOutputParameters.h>
 
 
-class ball_track_controller : public RTT::TaskContext {
+class ball_track_controller {
 
     private :
 
         ros::NodeHandle nh;
         ros::Subscriber sub_js;
 
-        RTT::OutputPort<std_msgs::Float64MultiArray> port_msr_jnt_state;
+        RMLPositionInputParameters** ip_ref;
 
-        ReflexxesAPI *rml;
-        RMLPositionInputParameters* ip;
-        RMLPositionOutputParameters* op;
-        RMLPositionFlags flags;
-
-        KDL::ChainFkSolverPos* fk_pos;
-        KDL::ChainIkSolverPos* ik_pos;
-        KDL::ChainIkSolverVel* ik_vel;
-
-        KDL::Tree tree;
-        KDL::Chain chain;
+        KDL::ChainFkSolverPos** fk_pos_ref;
+        KDL::ChainIkSolverPos** ik_pos_ref;
+        KDL::ChainIkSolverVel** ik_vel_ref;
 
         KDL::JntArray joint_state;
 
@@ -49,31 +35,24 @@ class ball_track_controller : public RTT::TaskContext {
         KDL::Rotation robotOrientation;
 
         bool firstJntState;
+        bool firstTrack;
+        bool heightInitialized;
 
         double timeLastTrack;
-        bool firstTrack;
 
 
     public : 
 
-        ball_track_controller( const std::string& name );
+        ball_track_controller( RMLPositionInputParameters** ip, KDL::ChainFkSolverPos** fk_pos, 
+                KDL::ChainIkSolverPos** ik_pos, KDL::ChainIkSolverVel** ik_vel );
+
         ~ball_track_controller() {}
 
-        virtual bool configureHook();
-        virtual bool startHook();
-
         virtual void updateHook();
-
-        virtual void stopHook();
-        virtual void cleanupHook();
-
-        KDL::JntArray getJointPos();
+        
+        void jointStateCallback( const sensor_msgs::JointState& js );
+        void initializeHeight( float z, KDL::Rotation orientation );
         void setJointPos( const KDL::JntArray& q , const KDL::JntArray& q_dot );
-
-        void jointStateCallback(const sensor_msgs::JointState& js );
-
-        void initializeHeight(float z);
-
-        void trackBall(float ball_x, float ball_y, float ball_z, double ballVertVelo);
+        void trackBall( float ball_x, float ball_y, float ball_z, double ballVertVelo );
 
 };

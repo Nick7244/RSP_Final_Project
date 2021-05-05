@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(ur5_kendama_track_ball_controller)
+project(ur5_kendama_control)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -8,13 +8,14 @@ project(ur5_kendama_track_ball_controller)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  kdl_parser
   roscpp
   rtt_ros
   rtt_rosnode
   rtt_rosparam
   rtt_std_msgs
+  ur5_kendama_launch_controller
   ur5_kendama_msgs
+  ur5_kendama_track_ball_controller
 )
 
 ## System dependencies are found with CMake's conventions
@@ -74,7 +75,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   rtt_std_msgs
+#   rtt_std_msgs#   ur5_kendama_msgs
 # )
 
 ################################################
@@ -108,8 +109,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES ur5_kendama_track_ball_controller
-#  CATKIN_DEPENDS kdl_parser roscpp rtt_ros rtt_rosnode rtt_rosparam rtt_std_msgs
+#  LIBRARIES ur5_kendama_control
+#  CATKIN_DEPENDS roscpp rtt_ros rtt_rosnode rtt_rosparam rtt_std_msgs ur5_kendama_launch_controller ur5_kendama_msgs ur5_kendama_track_ball_controller
 #  DEPENDS system_lib
 )
 
@@ -124,10 +125,21 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
-add_library( ball_pos_sub
-  src/ball_position_subscriber.cpp
+orocos_component( ur5_kendama_controller 
+  src/ur5_kendama_controller.cpp
 )
+
+target_link_libraries(ur5_kendama_controller
+  ${catkin_LIBRARIES}
+  ReflexxesTypeII
+  ball_launch_controller
+  ball_track_controller
+)
+
+## Declare a C++ library
+# add_library(${PROJECT_NAME}
+#   src/${PROJECT_NAME}/ur5_kendama_control.cpp
+# )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -137,9 +149,7 @@ add_library( ball_pos_sub
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable( ball_pos_sub_node 
-  src/ball_position_subscriber_node.cpp
-)
+# add_executable(${PROJECT_NAME}_node src/ur5_kendama_control_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -152,25 +162,9 @@ add_executable( ball_pos_sub_node
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(ball_pos_sub
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(ball_pos_sub_node 
-  ${catkin_LIBRARIES}
-  ball_pos_sub
-)
-
-
-add_library( ball_track_controller 
-  src/ball_track_controller.cpp
-)
-
-target_link_libraries(ball_track_controller
-  ${catkin_LIBRARIES}
-  ReflexxesTypeII
-  ball_pos_sub
-)
+# target_link_libraries(${PROJECT_NAME}_node
+#   ${catkin_LIBRARIES}
+# )
 
 #############
 ## Install ##
@@ -219,7 +213,7 @@ target_link_libraries(ball_track_controller
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_ur5_kendama_track_ball_controller.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_ur5_kendama_control.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
