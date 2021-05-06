@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   ur5_kendama_msgs
   geometry_msgs
   tf2
-#  kdl
+  tf2_geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
