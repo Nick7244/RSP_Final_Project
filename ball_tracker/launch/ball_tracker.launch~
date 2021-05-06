@@ -1,0 +1,12 @@
+<launch>
+
+  <!--Start Realsense R200 camera and ball tracker node-->
+
+  <include file="$(find realsense_camera)/launch/r200_nodelet_default.launch"/>
+  
+  <node pkg="kendama_visp_tracker"
+	name="ball_tracker"
+	type="ball_tracker_node">
+  </node>
+
+</launch>
