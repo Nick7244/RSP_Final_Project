@@ -18,7 +18,7 @@
   <include file="$(find easy_handeye)/launch/calibrate.launch">
     <!-- "eye-on-base" calibration -->
     <arg name="eye_on_hand" value="false"/>
-    <arg name="namespace_prefix" value="kendama_calib"/>
+    <arg name="namespace_prefix" value="kendama"/>
 
     <arg name="tracking_base_frame" value="camera"/>
     <arg name="tracking_marker_frame" value="checkerboard"/>
