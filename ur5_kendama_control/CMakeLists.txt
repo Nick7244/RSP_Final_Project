@@ -13,10 +13,9 @@ find_package(catkin REQUIRED COMPONENTS
   rtt_rosnode
   rtt_rosparam
   rtt_std_msgs
-  ur5_kendama_launch_controller
-  ur5_kendama_msgs
-  ur5_kendama_track_ball_controller
   kdl_parser
+  ball_position_subscriber
+  ur5_kendama_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -111,7 +110,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ur5_kendama_control
-#  CATKIN_DEPENDS roscpp rtt_ros rtt_rosnode rtt_rosparam rtt_std_msgs ur5_kendama_launch_controller ur5_kendama_msgs ur5_kendama_track_ball_controller
+#  CATKIN_DEPENDS roscpp rtt_ros rtt_rosnode rtt_rosparam rtt_std_msgs  ur5_kendama_msgs
 #  DEPENDS system_lib
 )
 
@@ -121,9 +120,28 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
+
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+)
+
+add_library( ball_track_controller 
+  src/ball_track_controller.cpp
+)
+
+target_link_libraries(ball_track_controller
+  ${catkin_LIBRARIES}
+  ReflexxesTypeII
+)
+
+add_library( ball_launch_controller 
+  src/ball_launch_controller.cpp
+)
+
+target_link_libraries(ball_launch_controller
+  ${catkin_LIBRARIES}
+  ReflexxesTypeII
 )
 
 orocos_component( ur5_kendama_controller 
@@ -133,6 +151,8 @@ orocos_component( ur5_kendama_controller
 target_link_libraries(ur5_kendama_controller
   ${catkin_LIBRARIES}
   ReflexxesTypeII
+  ball_track_controller
+  ball_launch_controller
 )
 
 ## Declare a C++ library

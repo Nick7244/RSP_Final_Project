@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>ur5_kendama_control</name>
+  <name>ball_position_subscriber</name>
   <version>0.0.0</version>
-  <description>The ur5_kendama_control package</description>
+  <description>The ball_position_subscriber package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/ur5_kendama_control</url> -->
+  <!-- <url type="website">http://wiki.ros.org/ball_position_subscriber</url> -->
 
 
   <!-- Author tags are optional, multiple are allowed, one per tag -->
@@ -50,28 +50,10 @@
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
-  <build_depend>rtt_ros</build_depend>
-  <build_depend>rtt_rosnode</build_depend>
-  <build_depend>rtt_rosparam</build_depend>
-  <build_depend>rtt_std_msgs</build_depend>
-  <build_depend>kdl_parser</build_depend>
-  <build_depend>ball_position_subscriber</build_depend>
   <build_depend>ur5_kendama_msgs</build_depend>
   <build_export_depend>roscpp</build_export_depend>
-  <build_export_depend>rtt_ros</build_export_depend>
-  <build_export_depend>rtt_rosnode</build_export_depend>
-  <build_export_depend>rtt_rosparam</build_export_depend>
-  <build_export_depend>rtt_std_msgs</build_export_depend>
-  <build_export_depend>kdl_parser</build_export_depend>
-  <build_export_depend>ball_position_subscriber</build_export_depend>
   <build_export_depend>ur5_kendama_msgs</build_export_depend>
   <exec_depend>roscpp</exec_depend>
-  <exec_depend>rtt_ros</exec_depend>
-  <exec_depend>rtt_rosnode</exec_depend>
-  <exec_depend>rtt_rosparam</exec_depend>
-  <exec_depend>rtt_std_msgs</exec_depend>
-  <exec_depend>kdl_parser</exec_depend>
-  <exec_depend>ball_position_subscriber</exec_depend>
   <exec_depend>ur5_kendama_msgs</exec_depend>
 
 

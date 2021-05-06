@@ -12,8 +12,15 @@
 ur5_kendama_controller::ur5_kendama_controller( const std::string& name ) 
     : TaskContext(name),
     port_msr_jnt_state("Measured joint state"),
+    prevNorm(1000),
+    launchController(nh),
+    trackController(nh),
     launchCommanded(false),
-    prevNorm(1000)
+    trackCommanded(false),
+    initialLaunch(true),
+    TPoseCommanded(false),
+    firstErrorMsg(true),
+    errorState(false)
 {
     std::cout << "ur5_kendama_controller::ur5_kendama_controller" << std::endl;
 
@@ -58,7 +65,8 @@ ur5_kendama_controller::ur5_kendama_controller( const std::string& name )
     addOperation("SetJointPos", &ur5_kendama_controller::setJointPos, this, RTT::OwnThread);
     addOperation("ZeroPose", &ur5_kendama_controller::commandZeroPose, this, RTT::OwnThread);
     addOperation("TPose", &ur5_kendama_controller::commandTPose, this, RTT::OwnThread);
-    addOperation("LaunchBall", &ur5_kendama_controller::launchBallFirstSegment, this, RTT::OwnThread);
+    addOperation("LaunchBall", &ur5_kendama_controller::launchBall, this, RTT::OwnThread);
+    addOperation("TrackBall", &ur5_kendama_controller::trackBall, this, RTT::OwnThread);
 }
 
 
@@ -78,8 +86,8 @@ bool ur5_kendama_controller::configureHook()
         ip->CurrentVelocityVector->VecData[i] = 0.0;
         ip->CurrentAccelerationVector->VecData[i] = 0.0;
 
-        ip->MaxVelocityVector->VecData[i] = 1.0;
-        ip->MaxAccelerationVector->VecData[i] = 1.0;
+        ip->MaxVelocityVector->VecData[i] = 0.5;
+        ip->MaxAccelerationVector->VecData[i] = 0.75;
         ip->MaxJerkVector->VecData[i] = 1.0;
 
         ip->SelectionVector->VecData[i] = true;
@@ -89,8 +97,8 @@ bool ur5_kendama_controller::configureHook()
     }
 
 
-    ball_launch_controller launchController(&ip, &fk_pos, &ik_pos, &ik_vel);
-    ball_track_controller trackController(&ip, &fk_pos, &ik_pos, &ik_vel);
+    launchController.initializeParameters(&ip, &fk_pos, &ik_pos, &ik_vel);
+    trackController.initializeParameters(&ip, &fk_pos, &ik_pos, &ik_vel);
 
 }
 
@@ -103,6 +111,39 @@ bool ur5_kendama_controller::startHook()
 
 void ur5_kendama_controller::updateHook() 
 {
+    // If we are launching the ball
+    if ( launchCommanded )
+    {
+        // If we are not yet done launching, call the launch controller update hook
+        if ( !launchController.finishedLaunch() )
+        {
+            launchController.updateHook();
+        }
+
+        // Else, we are done launching and will begin tracking the ball
+        else
+        {
+            std::cout << "Ball successfully launched!" << std::endl;
+            launchCommanded = false;
+
+            bool launch_only;
+            nh.param("/launch_only", launch_only, bool());
+
+            if ( !launch_only )
+            {
+                trackBall();
+            }
+        }
+        
+    }
+
+    // If we are tracking the ball, call the track controller update hook
+    if ( trackCommanded )
+    {
+        trackController.updateHook();
+    }
+
+
     // compute an iteration of the trajectory
     int result = rml->RMLPosition(*ip, op, flags);
 
@@ -114,48 +155,46 @@ void ur5_kendama_controller::updateHook()
     // get the joint values and write them to the port
     std_msgs::Float64MultiArray js;
     js.data.resize(6);
-    
+
+    KDL::JntArray q_next(6);
+        
     for ( int i = 0; i < 6; i++ )
     {
         op->GetNewPositionVectorElement(&js.data[i], i);
+        q_next.data[i] = js.data[i];
     }
 
-    port_msr_jnt_state.write(js);
+    // Get current cartesian position of end effector
+    KDL::JntArray q_cur = joint_state;
+    KDL::Frame p_cur;
+    fk_pos->JntToCart(q_cur, p_cur, -1);
+    float cupHeight =  p_cur.p.z();
 
-    // If we have a commanded launch of the ball
-    if( launchCommanded )
+    KDL::Frame p_next;
+    fk_pos->JntToCart(q_next, p_next, -1);
+    float nextHeight = p_next.p.z();
+
+    if ( (!(cupHeight <= 0.15 && nextHeight < cupHeight) || initialLaunch) && !errorState )
     {
-        // Wait to achieve mid-waypoint
-        KDL::JntArray diff(6);
-        KDL::Subtract(joint_state, q_mid_desired, diff);
+        port_msr_jnt_state.write(js);
 
-        float sum_of_squares = diff.data[0]*diff.data[0] + diff.data[1]*diff.data[1] + 
-                    diff.data[2]*diff.data[2] + diff.data[3]*diff.data[3] + 
-                    diff.data[4]*diff.data[4] + diff.data[5]*diff.data[5];
-
-        float norm_diff = pow(sum_of_squares, 0.5);
-
-        // If mid-waypoint achieved, proceed to end-waypoint to finish launch
-        if( norm_diff < 0.1 || prevNorm < norm_diff )
+        if ( initialLaunch && TPoseCommanded )
         {
-            launchBallLastSegment();
-            launchCommanded = false;
-            prevNorm = 1000;
-        } 
-        
-        else 
-        {
-            prevNorm = norm_diff;
+            initialLaunch = false;
         }
     }
 
+    else
+    {
+        if ( firstErrorMsg )
+        {
+            ROS_INFO("Attempting to move robot too low, robot will not move further. Please reinitialize to T-pose.");
+            firstErrorMsg = false;
+            errorState = true;
+        }
+    }
 
-    // Get current position from FK
-    //KDL::JntArray q_cur = joint_state;
-    //KDL::Frame p_cur;
-    //fk_pos->JntToCart(q_cur, p_cur, -1);
-    // 0.817194, 0.303569
-    //std::cout << p_cur.p.x() << ", " << p_cur.p.y() << ", " << p_cur.p.z() << std::endl; 
+    
 }
 
 
@@ -200,6 +239,10 @@ void ur5_kendama_controller::setJointPos( const KDL::JntArray& q , const KDL::Jn
     // extract out components of the input joint array to set as target positions
     for ( int i = 0; i < 6; i++ )
     {
+        ip->MaxVelocityVector->VecData[i] = 0.5;
+        ip->MaxAccelerationVector->VecData[i] = 0.75;
+        ip->MaxJerkVector->VecData[i] = 1.0;
+
         ip->TargetPositionVector->VecData[i] = q.data[i];
         ip->TargetVelocityVector->VecData[i] = q_dot.data[i];
     }
@@ -223,12 +266,11 @@ void ur5_kendama_controller::commandTPose()
     t_pose_velo.data[4] = 0.0;
     t_pose_velo.data[5] = 0.0;
 
-    for ( int i = 0; i < 6; i++ )
-    {
-        ip->MaxVelocityVector->VecData[i] = 1.0;
-        ip->MaxAccelerationVector->VecData[i] = 1.0;
-        ip->MaxJerkVector->VecData[i] = 1.0;
-    }
+    launchCommanded = false;
+    trackCommanded = false;
+    firstErrorMsg = true;
+    errorState = false;
+    TPoseCommanded = true;
 
     setJointPos(t_pose_coords, t_pose_velo);
 }
@@ -251,12 +293,8 @@ void ur5_kendama_controller::commandZeroPose()
     t_pose_velo.data[4] = 0.0;
     t_pose_velo.data[5] = 0.0;
 
-    for ( int i = 0; i < 6; i++ )
-    {
-        ip->MaxVelocityVector->VecData[i] = 1.0;
-        ip->MaxAccelerationVector->VecData[i] = 1.0;
-        ip->MaxJerkVector->VecData[i] = 1.0;
-    }
+    launchCommanded = false;
+    trackCommanded = false;
 
     setJointPos(t_pose_coords, t_pose_velo);
 }
@@ -276,102 +314,38 @@ void ur5_kendama_controller::jointStateCallback(const sensor_msgs::JointState& j
 
 }
 
-void ur5_kendama_controller::launchBallFirstSegment()
+void ur5_kendama_controller::launchBall()
 {
-    // Get current position from FK
-    KDL::JntArray q_cur = joint_state;
-    KDL::Frame p_cur;
-    fk_pos->JntToCart(q_cur, p_cur, -1);
-
-    // Compute mid-waypoint position
-    KDL::Frame p_mid_desired = p_cur;
-    KDL::Vector mid(0.0, 0.0, 0.05);
-    p_mid_desired.p += mid;
-
-    // Get mid-waypoint joint state from IK
-    KDL::JntArray _q_mid_desired(6);
-    ik_pos->CartToJnt(q_cur, p_mid_desired, _q_mid_desired);
-
-    // Set mid-waypoint twist velo
-    KDL::Vector rot(0.0, 0.0, 0.0);
-    KDL::Vector vel(0.0, 0.0, 3.5);
-    KDL::Twist v_desired;
-    v_desired.rot = rot;
-    v_desired.vel = vel;
-
-    // Get mid-waypoint joint velo from IK_vel
-    KDL::JntArray q_dot_desired(6);
-    ik_vel->CartToJnt(_q_mid_desired, v_desired, q_dot_desired);
-
-    std::cout << "Sending midpoint command..." << std::endl;
-
-    std::cout << "Current joints: ";
-    
-    for ( int i = 0; i < 6; i++ )
-    {
-        std::cout << q_cur.data[i] << ", ";
-    }
-
-    std::cout << std::endl;
-    
-    // Set velo/accel limits
-    for ( int i = 0; i < 6; i++ )
-    {
-        ip->MaxVelocityVector->VecData[i] = 15;
-        ip->MaxAccelerationVector->VecData[i] = 150.0;
-        ip->MaxJerkVector->VecData[i] = 400.0;
-        std::cout << _q_mid_desired.data[i] << ", ";
-    }
-
-    std::cout << std::endl;
-
-    // Send command for mid-waypoint
-    setJointPos(_q_mid_desired, q_dot_desired);
     launchCommanded = true;
-    q_mid_desired = _q_mid_desired;
+    trackCommanded = false;
+
+    trackController.resetTrack();
+    launchController.launchBallFirstSegment();
 }
 
-void ur5_kendama_controller::launchBallLastSegment()
+void ur5_kendama_controller::trackBall()
 {
-    // Get current position from FK
-    KDL::JntArray q_cur = joint_state;
-    KDL::Frame p_cur;
-    fk_pos->JntToCart(q_cur, p_cur, -1);
+    bool launch_only;
+    nh.param("/launch_only", launch_only, bool());
 
-    // Compute end-waypoint position
-    KDL::Frame p_end_desired = p_cur;
-    KDL::Vector end(0.0, 0.0, 0.05);
-    p_end_desired.p += end;
-
-    // Get end-waypoint joint state from IK
-    q_cur = joint_state;
-    KDL::JntArray q_end_desired(6);
-    ik_pos->CartToJnt(q_cur, p_end_desired, q_end_desired);
-
-    // Set end-waypoint joint velo
-    KDL::JntArray zero_vel(6);
-    zero_vel.data[0] = 0.0;
-    zero_vel.data[1] = 0.0;
-    zero_vel.data[2] = 0.0;
-    zero_vel.data[3] = 0.0;
-    zero_vel.data[4] = 0.0;
-    zero_vel.data[5] = 0.0;
-
-    std::cout << "Sending endpoint command..." << std::endl;
-
-    // Set velo/accel limits
-    for ( int i = 0; i < 6; i++ )
+    if ( !launch_only )
     {
-        ip->MaxVelocityVector->VecData[i] = 15;
-        ip->MaxAccelerationVector->VecData[i] = 150.0;
-        ip->MaxJerkVector->VecData[i] = 400.0;
-        std::cout << q_end_desired.data[i] << ", ";
+        launchCommanded = false;
+        trackCommanded = true;
+
+        KDL::JntArray q_cur = joint_state;
+        KDL::Frame p_cur;
+        fk_pos->JntToCart(q_cur, p_cur, -1);
+    
+        trackController.initializeHeight(p_cur.p.z(), p_cur.M);
     }
 
-    std::cout << std::endl << std::endl;
-
-    // Send command for mid-waypoint
-    setJointPos(q_end_desired, zero_vel);
+    else
+    {
+        ROS_INFO("Attempting to run the ball tracking controller in 'Launch Only' mode.");
+        ROS_INFO("If you wish to run the ball tracking controller, please disable 'Launch Only' mode.");
+    }
+    
 }
 
 

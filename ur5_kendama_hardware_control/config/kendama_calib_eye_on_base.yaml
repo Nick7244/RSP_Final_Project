@@ -1,0 +1,18 @@
+parameters:
+  eye_on_hand: false
+  freehand_robot_movement: true
+  move_group: manipulator
+  move_group_namespace: /
+  namespace: /kendama_calib_eye_on_base/
+  robot_base_frame: base_link
+  robot_effector_frame: tool0
+  tracking_base_frame: camera_link
+  tracking_marker_frame: marker
+transformation:
+  qw: 0.44271112166989995
+  qx: 0.47286499149508543
+  qy: -0.7613993951763427
+  qz: 0.02601006715160126
+  x: 0.6259592477990849
+  y: 0.8269315377888057
+  z: 1.2187195660493606

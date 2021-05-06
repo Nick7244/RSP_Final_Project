@@ -16,8 +16,8 @@
 #include <ReflexxesTypeII/RMLPositionInputParameters.h>
 #include <ReflexxesTypeII/RMLPositionOutputParameters.h>
 
-#include <ur5_kendama_launch_controller/ball_launch_controller.hpp>
-#include <ur5_kendama_track_ball_controller/ball_track_controller.hpp>
+#include <ur5_kendama_control/ball_launch_controller.hpp>
+#include <ur5_kendama_control/ball_track_controller.hpp>
 
 
 // This is the component that actuall connects to the hardware
@@ -43,11 +43,18 @@ class ur5_kendama_controller : public RTT::TaskContext {
         KDL::Chain chain;
 
         bool launchCommanded;
-        KDL::JntArray q_mid_desired;
+        bool trackCommanded;
+        bool TPoseCommanded;
+        bool initialLaunch;
+        bool firstErrorMsg;
+        bool errorState;
 
         KDL::JntArray joint_state;
 
         float prevNorm;
+
+        ball_launch_controller launchController;
+        ball_track_controller trackController;
 
 
     public : 
@@ -71,7 +78,7 @@ class ur5_kendama_controller : public RTT::TaskContext {
 
         void jointStateCallback(const sensor_msgs::JointState& js );
 
-        void launchBallFirstSegment();
-        void launchBallLastSegment();
+        void launchBall();
+        void trackBall();
 
 };

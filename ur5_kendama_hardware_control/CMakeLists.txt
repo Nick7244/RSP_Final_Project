@@ -8,10 +8,6 @@ project(ur5_kendama_hardware_control)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  ur5_kendama_launch_controller
-  ur5_kendama_msgs
-  ur5_kendama_track_ball_controller
   ur_modern_driver
 )
 
@@ -107,7 +103,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ur5_kendama_hardware_control
-#  CATKIN_DEPENDS roscpp ur5_kendama_launch_controller ur5_kendama_msgs ur5_kendama_track_ball_controller
+#  CATKIN_DEPENDS roscpp   
 #  DEPENDS system_lib
 )
 

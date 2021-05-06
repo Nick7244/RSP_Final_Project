@@ -3,6 +3,7 @@
     <arg name="limited" default="false"  doc="If true, limits joint range [-PI, PI] on all joints." />
     <arg name="paused" default="false" doc="Starts gazebo in paused mode" />
     <arg name="gui" default="true" doc="Starts gazebo gui" />
+    <arg name="launch_only" default="false"/>
     
     <!-- startup simulated world -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -22,6 +23,12 @@
 
     <!-- set parameter name for end-effector used in simulation -->
     <param name="end_effector_name" value="cup_link"/>
+
+    <!-- set parameter for simulation version of controller -->
+    <param name="simulation" value="true"/>
+
+    <!-- set parameter for launch_only mode of controller -->
+    <param name="launch_only" value="$(arg launch_only)"/>
 
     <include file="$(find ur_gazebo)/launch/controller_utils.launch"/>
 
