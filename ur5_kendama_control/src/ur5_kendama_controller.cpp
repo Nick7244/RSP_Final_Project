@@ -19,6 +19,7 @@ ur5_kendama_controller::ur5_kendama_controller( const std::string& name )
     trackCommanded(false),
     initialLaunch(true),
     TPoseCommanded(false),
+    ZeroPoseCommanded(false),
     firstErrorMsg(true),
     errorState(false)
 {
@@ -35,7 +36,7 @@ ur5_kendama_controller::ur5_kendama_controller( const std::string& name )
     // Obtain the IK solver
     if ( kdl_parser::treeFromString(robot_description_string, tree) )
     {
-        if ( tree.getChain("base_link", end_effector_string, chain) )
+        if ( tree.getChain("base_link", "cup_link", chain) )
         {
             fk_pos = new KDL::ChainFkSolverPos_recursive(chain);
             ik_vel = new KDL::ChainIkSolverVel_pinv(chain);
@@ -174,7 +175,7 @@ void ur5_kendama_controller::updateHook()
     fk_pos->JntToCart(q_next, p_next, -1);
     float nextHeight = p_next.p.z();
 
-    if ( (!(cupHeight <= 0.15 && nextHeight < cupHeight) || initialLaunch) && !errorState )
+    if ( (!(cupHeight <= 0.15 && nextHeight < cupHeight) || initialLaunch || ZeroPoseCommanded) && !errorState )
     {
         port_msr_jnt_state.write(js);
 
@@ -256,7 +257,7 @@ void ur5_kendama_controller::commandTPose()
     t_pose_coords.data[2] = 1.11256 ;
     t_pose_coords.data[3] = -0.0667037;
     t_pose_coords.data[4] = 1.5708;
-    t_pose_coords.data[5] = 0.0;
+    t_pose_coords.data[5] = -0.0506;
     
     KDL::JntArray t_pose_velo(6);
     t_pose_velo.data[0] = 0.0;
@@ -271,6 +272,7 @@ void ur5_kendama_controller::commandTPose()
     firstErrorMsg = true;
     errorState = false;
     TPoseCommanded = true;
+    ZeroPoseCommanded = false;
 
     setJointPos(t_pose_coords, t_pose_velo);
 }
@@ -295,6 +297,7 @@ void ur5_kendama_controller::commandZeroPose()
 
     launchCommanded = false;
     trackCommanded = false;
+    ZeroPoseCommanded = true;
 
     setJointPos(t_pose_coords, t_pose_velo);
 }

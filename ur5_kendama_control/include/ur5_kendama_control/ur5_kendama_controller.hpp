@@ -45,6 +45,7 @@ class ur5_kendama_controller : public RTT::TaskContext {
         bool launchCommanded;
         bool trackCommanded;
         bool TPoseCommanded;
+        bool ZeroPoseCommanded;
         bool initialLaunch;
         bool firstErrorMsg;
         bool errorState;

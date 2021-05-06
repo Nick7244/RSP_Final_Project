@@ -2,7 +2,7 @@
 #include <ur5_kendama_msgs/ball_position.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/PointStamped.h>
-#include <gemetry_msgs/Pose.h>
+#include <geometry_msgs/Pose.h>
 
 #include <tf2/convert.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -39,8 +39,19 @@ int main(int argc, char** argv) {
 
   ros::NodeHandle nh;
 
-  // Get transformation from camera frame to world frame
-  camera_to_world = *(ros::topic::waitForMessage<geometry_msgs::TransformStamped>("/calibration_result"));
+  geometry_msgs::Vector3 t;
+  t.x = 0.303956463911;
+  t.y = 0.445021081457;
+  t.z = 0.337751883386;
+
+  geometry_msgs::Quaternion quat;
+  quat.x = -0.0397139299134;
+  quat.y = -0.0154557938755;
+  quat.z = 0.0261806431998 ;
+  quat.w = 0.998748464894;
+
+  camera_to_world.transform.translation = t;
+  camera_to_world.transform.rotation = quat;
   
   // Subscribe to topic publishing ball's position in camera frame
   ros::Subscriber sub = nh.subscribe("/aruco/pose", 10, &cubePosCallback);
