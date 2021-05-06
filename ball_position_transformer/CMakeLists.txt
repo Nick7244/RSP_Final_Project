@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   ur5_kendama_msgs
   geometry_msgs
+  tf2
+#  kdl
 )
 
 ## System dependencies are found with CMake's conventions
