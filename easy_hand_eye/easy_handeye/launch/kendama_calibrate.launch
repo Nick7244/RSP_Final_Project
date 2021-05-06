@@ -6,9 +6,13 @@
   
   <!-- start the RealSense camera -->
   <include file="$(find realsense_camera)/launch/r200_nodelet_default.launch"/>
-  
-  <!-- start checkerboard tracking -->
+
+  <!-- start checkerboard tracking
   <include file="$(find tuw_checkerboard)/launch/kendama_checkerboard.launch"/>
+  -->
+
+  <!-- start ar tracking -->
+  <include file="$(find easy_handeye)/launch/aruco.launch"/>
 
   <!-- start easy_handeye -->
   <include file="$(find easy_handeye)/launch/calibrate.launch">
