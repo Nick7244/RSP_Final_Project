@@ -1,8 +1,8 @@
 <launch>
   
-  <node pkg="aruco_ros" type="single" name="aruco" ns="camera">
-    <remap from="/image" to="color/image_raw"/>
-    <remap from="/camera_info" to="color/camera_info"/>
+  <node pkg="aruco_ros" type="single" name="aruco" output="screen">
+    <remap from="/image" to="/camera/color/image_raw"/>
+    <remap from="/camera_info" to="camera/color/camera_info"/>
     <param name="image_is_rectified" value="True"/>
     <param name="marker_size"        value="0.1"/>
     <param name="marker_id"          value="01"/>
