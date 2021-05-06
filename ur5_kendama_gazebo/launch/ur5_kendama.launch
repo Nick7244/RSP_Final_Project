@@ -15,6 +15,7 @@
     <!-- send robot urdf to param server -->
     <include file="$(find ur5_kendama_description)/launch/ur5_kendama_upload.launch">
       <arg name="limited" value="$(arg limited)"/>
+      <arg name="gazebo" value="true"/>
     </include>
 
     <!-- push robot_description & ball_description to factory and spawn robot & ball_plugin in gazebo -->

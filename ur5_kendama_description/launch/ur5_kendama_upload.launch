@@ -2,11 +2,14 @@
 <launch>
   <arg name="limited" default="false" doc="If true, limits joint range [-PI, PI] on all joints." />
   <arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface" />
+  <arg name="gazebo" doc="If true, launches gazebo ball plugin on the parameter server"/>
 
   <param name="robot_description" 
          command="$(find xacro)/xacro --inorder '$(find ur5_kendama_description)/urdf/ur5_kendama.urdf.xacro' transmission_hw_interface:=$(arg transmission_hw_interface)" />
 
-  <param name="ball_description"
+  
+  <param if="$(arg gazebo)"
+         name="ball_description"
          command="$(find xacro)/xacro --inorder '$(find ur5_kendama_description)/urdf/ball_plugin.urdf.xacro'"/>
 
 </launch>
