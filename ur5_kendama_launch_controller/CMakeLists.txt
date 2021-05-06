@@ -106,8 +106,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES ur5_kendama_launch_controller
+   INCLUDE_DIRS include
+   LIBRARIES ur5_kendama_launch_controller
 #  CATKIN_DEPENDS ReflexxesTypeII kdl_parser roscpp rtt_ros rtt_rosnode rtt_rosparam
 #  DEPENDS system_lib
 )
@@ -123,11 +123,11 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library( ball_launch_controller 
+add_library( ur5_kendama_launch_controller 
   src/ball_launch_controller.cpp
 )
 
-target_link_libraries(ball_launch_controller
+target_link_libraries( ur5_kendama_launch_controller
   ${catkin_LIBRARIES}
   ReflexxesTypeII
 )

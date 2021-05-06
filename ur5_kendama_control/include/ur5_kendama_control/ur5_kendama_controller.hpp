@@ -19,13 +19,6 @@
 #include <ur5_kendama_launch_controller/ball_launch_controller.hpp>
 #include <ur5_kendama_track_ball_controller/ball_track_controller.hpp>
 
-enum ur5_controller_state 
-{
-    idle,
-    launch,
-    follow,
-    craddle
-};
 
 // This is the component that actuall connects to the hardware
 class ur5_kendama_controller : public RTT::TaskContext {
@@ -42,8 +35,6 @@ class ur5_kendama_controller : public RTT::TaskContext {
         RMLPositionOutputParameters* op;
         RMLPositionFlags flags;
 
-        ur5_controller_state controller_state;
-
         KDL::ChainFkSolverPos* fk_pos;
         KDL::ChainIkSolverPos* ik_pos;
         KDL::ChainIkSolverVel* ik_vel;
@@ -57,9 +48,6 @@ class ur5_kendama_controller : public RTT::TaskContext {
         KDL::JntArray joint_state;
 
         float prevNorm;
-
-        ball_launch_controller launchController;
-        ball_track_controller trackController;
 
 
     public : 

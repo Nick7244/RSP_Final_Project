@@ -12,7 +12,6 @@
 ur5_kendama_controller::ur5_kendama_controller( const std::string& name ) 
     : TaskContext(name),
     port_msr_jnt_state("Measured joint state"),
-    controller_state(idle),
     launchCommanded(false),
     prevNorm(1000)
 {
@@ -90,8 +89,8 @@ bool ur5_kendama_controller::configureHook()
     }
 
 
-    launchController(&ip, &fk_pos, &ik_pos, &ik_vel);
-    trackController(&ip, &fk_pos, &ik_pos, &ik_vel);
+    ball_launch_controller launchController(&ip, &fk_pos, &ik_pos, &ik_vel);
+    ball_track_controller trackController(&ip, &fk_pos, &ik_pos, &ik_vel);
 
 }
 

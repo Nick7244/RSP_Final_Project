@@ -107,8 +107,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES ur5_kendama_track_ball_controller
+   INCLUDE_DIRS include
+   LIBRARIES ur5_kendama_track_ball_controller
 #  CATKIN_DEPENDS kdl_parser roscpp rtt_ros rtt_rosnode rtt_rosparam rtt_std_msgs
 #  DEPENDS system_lib
 )
@@ -162,11 +162,11 @@ target_link_libraries(ball_pos_sub_node
 )
 
 
-add_library( ball_track_controller 
+add_library( ur5_kendama_track_ball_controller 
   src/ball_track_controller.cpp
 )
 
-target_link_libraries(ball_track_controller
+target_link_libraries( ur5_kendama_track_ball_controller
   ${catkin_LIBRARIES}
   ReflexxesTypeII
   ball_pos_sub

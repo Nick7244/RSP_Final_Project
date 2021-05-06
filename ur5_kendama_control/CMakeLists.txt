@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   ur5_kendama_launch_controller
   ur5_kendama_msgs
   ur5_kendama_track_ball_controller
+  kdl_parser
 )
 
 ## System dependencies are found with CMake's conventions
@@ -132,8 +133,6 @@ orocos_component( ur5_kendama_controller
 target_link_libraries(ur5_kendama_controller
   ${catkin_LIBRARIES}
   ReflexxesTypeII
-  ball_launch_controller
-  ball_track_controller
 )
 
 ## Declare a C++ library
