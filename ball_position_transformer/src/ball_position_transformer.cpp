@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
   // Subscribe to topic publishing ball's position in camera frame
   ros::Subscriber sub = nh.subscribe("/ball_pos_camera", 10, &ballPosCallback);
 
-  pub = nh.advertise<ur5_kendama_msgs::ball_position>("ball_pos_world", 10);
+  pub = nh.advertise<ur5_kendama_msgs::ball_position>("/ball_position", 10);
 
   ros::spin();
   return 0;
