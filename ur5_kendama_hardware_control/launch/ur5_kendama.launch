@@ -1,0 +1,22 @@
+<launch>
+
+    <arg name="launch_only" default="false"/>
+
+    <!-- ur5 hardware driver -->
+    <include file="$(find ur5_kendama_hardware_control)/launch/ur5_ros_control.launch">
+        <arg name="robot_ip" value="172.22.22.2"/>
+        <arg name="limited" value="true"/>
+        <arg name="controllers" value="joint_state_controller force_torque_sensor_controller joint_group_position_controller"/>
+        <arg name="stopped_controllers" value="pos_based_pos_traj_controller joint_group_vel_controller vel_based_pos_traj_controller"/>
+    </include>
+
+    <!-- set parameter name for end-effector used in simulation -->
+    <param name="end_effector_name" value="tool0"/>
+
+    <!-- set parameter for simulation version of controller -->
+    <param name="simulation" value="false"/>
+
+    <!-- set parameter for launch_only mode of controller -->
+    <param name="launch_only" value="$(arg launch_only)"/>
+
+</launch>

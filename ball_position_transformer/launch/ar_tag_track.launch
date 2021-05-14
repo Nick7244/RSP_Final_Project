@@ -1,0 +1,9 @@
+<launch>
+
+    <include file="$(find realsense_camera)/launch/r200_nodelet_default.launch"/>
+    <include file="$(find easy_handeye)/launch/aruco.launch"/>
+
+    <node name="ar_tag_transformer" pkg="ball_position_transformer" type="ar_tag_position_transformer_node"/>
+    <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui"/>
+
+</launch>

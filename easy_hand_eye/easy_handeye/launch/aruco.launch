@@ -1,0 +1,14 @@
+<launch>
+  
+  <node pkg="aruco_ros" type="single" name="aruco" output="screen">
+    <remap from="/image" to="/camera/color/image_raw"/>
+    <remap from="/camera_info" to="camera/color/camera_info"/>
+    <param name="image_is_rectified" value="True"/>
+    <param name="marker_size"        value="0.165"/>
+    <param name="marker_id"          value="01"/>
+    <param name="camera_frame"       value="camera"/>
+    <param name="marker_frame"       value="marker" />
+    <param name="corner_refinement"  value="SUBPIX" />
+  </node>
+  
+</launch>
